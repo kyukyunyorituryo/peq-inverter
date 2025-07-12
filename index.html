@@ -14,40 +14,46 @@
   <button onclick="downloadTxt()">反転設定を保存</button>
   <textarea id="output" readonly></textarea>
 
-  <script>
-    document.getElementById('fileInput').addEventListener('change', function(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(event) {
-        const content = event.target.result;
-        const inverted = invertPEQ(content);
-        document.getElementById('output').value = inverted;
-      };
-      reader.readAsText(file);
-    });
+<script>
+  let originalFileName = "inverted_peq.txt"; // デフォルトファイル名
 
-    function invertPEQ(text) {
-      const lines = text.split(/\r?\n/);
-      return lines.map(line => {
-        if (line.startsWith("Preamp:")) {
-          return line.replace(/(-?[\d.]+) dB/, (_, g) => `${-parseFloat(g)} dB`);
-        }
-        if (line.startsWith("Filter")) {
-          return line.replace(/Gain (-?[\d.]+) dB/, (_, g) => `Gain ${-parseFloat(g)} dB`);
-        }
-        return line;
-      }).join("\n");
-    }
+  document.getElementById('fileInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
 
-    function downloadTxt() {
-      const text = document.getElementById('output').value;
-      const blob = new Blob([text], { type: "text/plain" });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = "inverted_peq.txt";
-      link.click();
-    }
-  </script>
+    originalFileName = "inverted_" + file.name;
+
+    const reader = new FileReader();
+    reader.onload = function(event) {
+      const content = event.target.result;
+      const inverted = invertPEQ(content);
+      document.getElementById('output').value = inverted;
+    };
+    reader.readAsText(file);
+  });
+
+  function invertPEQ(text) {
+    const lines = text.split(/\r?\n/);
+    return lines.map(line => {
+      if (line.startsWith("Preamp:")) {
+        return line.replace(/(-?[\d.]+) dB/, (_, g) => `${-parseFloat(g)} dB`);
+      }
+      if (line.startsWith("Filter")) {
+        return line.replace(/Gain (-?[\d.]+) dB/, (_, g) => `Gain ${-parseFloat(g)} dB`);
+      }
+      return line;
+    }).join("\n");
+  }
+
+  function downloadTxt() {
+    const text = document.getElementById('output').value;
+    const blob = new Blob([text], { type: "text/plain" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = originalFileName;
+    link.click();
+  }
+</script>
+
 </body>
 </html>
